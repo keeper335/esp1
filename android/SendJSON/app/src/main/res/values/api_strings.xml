@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="user_key">foo_bar_baz</string>
+    <string name="api_host">10.0.2.2</string>
+    <string name="api_port">3000</string>
+    <string name="api_socket_port">3025</string>
+</resources>

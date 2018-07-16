@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SendJSON</string>
+    <string name="app_offline">Connection is off</string>
+    <string name="app_online">Connection is on</string>
+</resources>

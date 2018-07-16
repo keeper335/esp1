@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12pt"
+        android:text="Toggle buttons horizontal" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <ToggleButton
+            android:id="@+id/button1"
+            style="@android:style/Widget.Button.Toggle"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:onClick="onClick"
+            android:text="Button 1"
+            android:textOff="Button 1 Off"
+            android:textOn="Button 1 On" />
+
+        <ToggleButton
+            android:id="@+id/button2"
+            style="@android:style/Widget.Button.Toggle"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:onClick="onClick"
+            android:text="Button 2"
+            android:textOff="Button 2 Off"
+            android:textOn="Button 2 On" />
+
+        <LinearLayout
+            android:id="@+id/connectionPanel1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="end|bottom"
+            android:background="#dbdbdb">
+
+            <TextView
+                android:id="@+id/app_online_cap"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:text="@string/app_offline"
+                android:textSize="10pt"
+                android:visibility="visible"
+                android:layout_marginEnd="10dp" />
+
+            <ImageView
+                android:contentDescription="@string/app_online"
+                android:id="@+id/imageViewOn"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@android:drawable/presence_online"
+                android:visibility="gone"/>
+
+            <ImageView
+                android:contentDescription="@string/app_offline"
+                android:id="@+id/imageViewOff"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@android:drawable/presence_offline"
+                android:visibility="visible"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
