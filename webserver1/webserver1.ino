@@ -15,8 +15,7 @@
 #include "html_page.h"
 #include "ws1_API.h"
 
-#define led_pin 2
-const String ESP_CONFIG_FILE = "config";
+const char *ESP_CONFIG_FILE = "config";
 
 
 int wifi_mode = WIFI_AP; //WIFI_STA = 1, WIFI_AP = 2
@@ -28,27 +27,8 @@ long mSocket_port = 81;
 ESP8266WebServer *server;
 WebSocketsServer *webSocket;
 
-int intled_flash_ = 0;
-int intled_flash_counter = 0;
-int intled_flash_state = LOW;
-
 int sdcard_init();
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
-
-void flash_internal_led() {
-  //int state_ = digitalRead(led_pin);
-  intled_flash_counter++;
-  if (intled_flash_state == LOW && intled_flash_counter >= intled_flash_) {
-    intled_flash_counter = 0;
-    digitalWrite(led_pin, HIGH); //OFF
-    intled_flash_state = HIGH;
-  }
-  else if (intled_flash_counter >= 100) {
-    intled_flash_counter = 0;
-    digitalWrite(led_pin, LOW); //ON
-    intled_flash_state = LOW;
-  }
-}
 
 int wifi_init() {
   int wifi_status = WL_IDLE_STATUS;
@@ -91,37 +71,6 @@ void server_init() {
   delay(500);
   server->on("/", [](){server->send(200, "text/html", INDEX_HTML);});
   server->onNotFound([]() {server->send(404, "text/plain", NOTFOUND_HTML);});
-  server->on("/submit", [](){
-    String argName, argValue;
-    
-    int val_ = -1;
-    Serial.print("Received submit event with data: ");
-    for (byte i = 0; i < server->args(); i++) {
-      argName = server->argName(i);
-      Serial.print(argName);
-      Serial.print("=");
-      argValue = server->arg(i);
-      Serial.print(argValue);
-      
-
-      if (argName.equals("state")) {
-        if(argValue.equals("true")) val_ = HIGH;
-        else if(argValue.equals("false")) val_ = LOW;
-        Serial.print("! int ");
-        Serial.print(val_);
-      }
-
-      Serial.print(", ");
-    }
-    Serial.println();
-    
-    if (val_ > -1)
-      digitalWrite(led_pin, val_);
-    String ret_ = "{\"state\":";
-    ret_ += val_;
-    ret_ += "}";
-    server->send(200, "text/html", ret_);
-  });
   server->begin();
   Serial.println("HTTP server started");
 
@@ -135,8 +84,17 @@ void server_init() {
 
 void setup() {
   // put your setup code here, to run once:
-  //pinMode(led_pin, OUTPUT);
-  //digitalWrite(led_pin, HIGH);
+  pinMode(2, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(0, OUTPUT);
+  
+  digitalWrite(2, HIGH);
+  digitalWrite(5, HIGH);
+  digitalWrite(4, HIGH);
+  digitalWrite(0, HIGH);
+
+  
   Serial.begin(115200);
   
   while(!Serial){;}
@@ -148,21 +106,51 @@ void setup() {
   //Init wifi
   if (wifi_init() < 0) return;
   server_init();
+
+  //write_config();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   webSocket->loop();
   server->handleClient();
-  if (intled_flash_ > 0)
-    flash_internal_led();
-  else intled_flash_counter = 0;
+  //if (intled_flash_ > 0)
+//    flash_internal_led();
+  //else intled_flash_counter = 0;
+}
+
+void write_config() {
+  Serial.println("Write config file");
+  StaticJsonBuffer<500> jsonBuffer;
+  File configFile;
+  
+  JsonObject& root = jsonBuffer.createObject();
+  root["wifi_mode"] = 2; //WIFI_AP
+  root["ip_address"] = "192.168.1.160";
+  root["ip_port"] = 3000;
+  root["socket_port"] = 3025;
+  //root[""] = ;
+  //root[""] = ;
+
+  SD.remove(ESP_CONFIG_FILE);
+  
+  configFile = SD.open(ESP_CONFIG_FILE, FILE_WRITE);
+  if (!configFile) {
+    Serial.println("Failed opening config file");
+    return;
+  }
+
+  if (root.printTo(configFile) == 0) {
+    Serial.println("Failed to write config file");
+  }
+
+  configFile.close();
 }
 
 int sdcard_init() {
   File configFile;
-  String config_ = "";
-  StaticJsonBuffer<500> jsonBuffer;
+  //String config_ = "";
+  StaticJsonBuffer<512> jsonBuffer;
   
   Serial.print("\nInitializing SD card...");
   if (!SD.begin(15)) {
@@ -172,36 +160,41 @@ int sdcard_init() {
   Serial.println("Wiring is correct and a card is present.");
 
   configFile = SD.open(ESP_CONFIG_FILE, FILE_READ);
-  if (configFile) {
-    while(configFile.available()) config_+=configFile.readString();
-    configFile.close();
-  } else {
-    Serial.println("Failed reading config file");
-    return -1;
-  }
-  JsonObject& root = jsonBuffer.parseObject(config_);
-  if (!root.success()) {
-    Serial.println("Failed parsing config object");
-    Serial.println(config_);
+  //if (configFile) {
+    //while(configFile.available()) config_+=configFile.readString();
+  //} else {
+    //Serial.println("Failed reading config file");
+    //return -1;
+  //}
+  
+  
+  JsonObject& root = jsonBuffer.parseObject(configFile);
+  if (root.success()) {
     root.printTo(Serial);
-    return -1;
+    Serial.println("");
+    
+    String mIp_string2 = root["ip_address"];
+    int wifi_mode2 = root["wifi_mode"];
+    long mIp_port2 = root["ip_port"];
+    long mSocket_port2 = root["socket_port"];
+    if (mIp_string2) mIp_string = mIp_string2;
+    if (mIp_port2 > 0) mIp_port = mIp_port2;
+    if (mSocket_port2 > 0) mSocket_port = mSocket_port2;
+    if (wifi_mode2 > 0) wifi_mode = wifi_mode2;
+    //Serial.println(config_);
+  }
+  else {
+    Serial.println("Failed parsing config object");
+    
   }
 
-  //Serial.print("Config IP address: ");
-  String mIp_string2 = root["ip_address"];
-  int wifi_mode2 = root["wifi_mode"];
-  long mIp_port2 = root["ip_port"];
-  long mSocket_port2 = root["socket_port"];
-  if (mIp_string2) mIp_string = mIp_string2;
-  if (mIp_port2 > 0) mIp_port = mIp_port2;
-  if (mSocket_port2 > 0) mSocket_port = mSocket_port2;
-  if (wifi_mode2 > 0) wifi_mode = wifi_mode2;
-
+  configFile.close();
   return 0;
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length)
 {
+  static char backMessage[128];
   Serial.printf("webSocketEvent(%d, %d, ...)\r\n", num, type);
   switch(type) {
     case WStype_DISCONNECTED:
@@ -215,25 +208,10 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       break;
     case WStype_TEXT:
       Serial.printf("[%u] get Text: %s\r\n", num, payload);
+      memset(backMessage, 0, 128 * sizeof(char));
+      handleWebSocketAPI((const char *)payload, backMessage);
 
-      // send data to all connected clients
-      webSocket->broadcastTXT(payload, length);
-
-      if (strcmp(INTLEDON, (const char *)payload) ==0) {
-        digitalWrite(led_pin, LOW);
-        webSocket->broadcastTXT(INTLEDON_NTFY, strlen(INTLEDON_NTFY));
-        intled_flash_ = 0;
-      }
-      else if (strcmp(INTLEDOFF, (const char *)payload) ==0) {
-        digitalWrite(led_pin, HIGH);
-        webSocket->broadcastTXT(INTLEDOFF_NTFY, strlen(INTLEDOFF_NTFY));
-        intled_flash_ = 0;
-      }
-      else if (strcmp(INTLEDFLASH, (const char *)payload) ==0) {
-        digitalWrite(led_pin, HIGH);
-        intled_flash_ = 50;
-        webSocket->broadcastTXT(INTLEDFLASH_NTFY, strlen(INTLEDFLASH_NTFY));
-      }
+      webSocket->broadcastTXT(backMessage, strlen(backMessage));
       break;
     case WStype_BIN:
       Serial.printf("[%u] get binary length: %u\r\n", num, length);

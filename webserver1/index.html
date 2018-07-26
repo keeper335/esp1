@@ -1,4 +1,3 @@
-static const char INDEX_HTML[] = R"rawliteral(
 <!DOCTYPE html>
 <html><head><title>ESP8266</title>
 <style>
@@ -33,7 +32,7 @@ body {}
     <p>GPIO 2
     <button onclick="sendData('pin_set', 2, 'OFF')">OFF</button>&nbsp;
     <button onclick="sendData('pin_set', 2, 'ON')">ON</button>&nbsp;
-    <!--button onclick="sendData('pin_pwm', 2, 500)">PWM 50%</button-->
+        <!--button onclick="sendData('pin_pwm', 2, 500)">PWM 50%</button-->
     <span id='state_d2' class="state_indicator"></span><br />
     <input id='range_d2' type="range" min="1" max="1023" step="1" value="500"> 
     </p>
@@ -78,7 +77,7 @@ body {}
       wsTemp_.onclose = function() {ws = WSDummy; setTimeout(connect, 1000);}
       wsTemp_.onmessage = onWSMessage;
     };
-    connect();
+    //connect();
 
     
 
@@ -100,7 +99,6 @@ body {}
         var state = Number(e.detail.state);
         if (!isNaN(state)) {
           elem.style.backgroundColor = "#0000" + Math.round(state*255/1023).toString(16);
-          document.getElementById("range_d2").value = state;
         }
       }
     });
@@ -140,12 +138,9 @@ body {}
         }
       }
     });
-
+    
     document.getElementById("range_d2").addEventListener("input", function(ev) {sendData('pin_pwm', 2, this.value)});
    
 </script>
 
 </html>
-)rawliteral";
-
-static const char NOTFOUND_HTML[] = R"rawliteral(<h1>Ooops</h1><p>Someone destroyed the page you are looking for</p>)rawliteral";
