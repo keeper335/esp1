@@ -95,7 +95,7 @@ void setup() {
   digitalWrite(0, HIGH);
 
   
-  Serial.begin(115200);
+  Serial.begin(74880);
   
   while(!Serial){;}
   Serial.println("\nSerial Ok");
