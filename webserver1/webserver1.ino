@@ -12,11 +12,12 @@
  *  miso-d6
  */
 
-#include "html_page.h"
+//#include "html_page.h"
 #include "ws1_API.h"
 
 const char *ESP_CONFIG_FILE = "config";
-
+char *INDEX_HTML;
+static const char NOTFOUND_HTML[] = R"rawliteral(<h1>Ooops</h1><p>Someone destroyed the page you are looking for</p>)rawliteral";
 
 int wifi_mode = WIFI_AP; //WIFI_STA = 1, WIFI_AP = 2
 String ssid = "KEEPER_ESP1";
@@ -148,7 +149,7 @@ void write_config() {
 }
 
 int sdcard_init() {
-  File configFile;
+  File configFile, indexFile;
   //String config_ = "";
   StaticJsonBuffer<512> jsonBuffer;
   
@@ -189,6 +190,35 @@ int sdcard_init() {
   }
 
   configFile.close();
+
+
+  indexFile = SD.open("index.htm");
+  if(indexFile) {
+    //while(indexFile.available()) {
+    //  Serial.write(indexFile.read());
+    //}
+    //Serial.println("");
+
+uint32_t indexSize = indexFile.size();
+Serial.println("Allocate string for bytes : " + String(indexSize));
+INDEX_HTML = new char[indexSize];
+if (!INDEX_HTML) Serial.println("Failed allocating mem");
+int readBytes = indexFile.read(INDEX_HTML, indexSize);
+Serial.println("Read index file bytes : " + String(readBytes));
+
+    indexFile.close();
+  }
+  else
+    Serial.println("Cannot open index html");
+  //
+  //
+  //
+  //
+  //
+  //
+
+  
+  
   return 0;
 }
 
