@@ -55,6 +55,7 @@ int wifi_init() {
     //WIFI_STA
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), password.c_str());
+    WiFi.config(mIp, mgw, msubnet);
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
         Serial.print(".");
@@ -62,7 +63,7 @@ int wifi_init() {
   }
 
   Serial.print("WiFi initialized: ");
-  Serial.println(WiFi.softAPIP());
+  Serial.println(WiFi.localIP());
   return 0;
 }
 
@@ -175,6 +176,8 @@ int sdcard_init() {
     Serial.println("");
     
     String mIp_string2 = root["ip_address"];
+    String wifi_ssid = root["wifi_ssid"];
+    String wifi_pswd = root["wifi_password"];
     int wifi_mode2 = root["wifi_mode"];
     long mIp_port2 = root["ip_port"];
     long mSocket_port2 = root["socket_port"];
@@ -182,6 +185,10 @@ int sdcard_init() {
     if (mIp_port2 > 0) mIp_port = mIp_port2;
     if (mSocket_port2 > 0) mSocket_port = mSocket_port2;
     if (wifi_mode2 > 0) wifi_mode = wifi_mode2;
+
+    if (wifi_ssid) ssid = wifi_ssid;
+    if (wifi_pswd) password = wifi_pswd;
+
     //Serial.println(config_);
   }
   else {
